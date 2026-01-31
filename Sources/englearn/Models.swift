@@ -43,6 +43,8 @@ enum VoiceStyle: String, Codable, CaseIterable, Identifiable {
 }
 
 enum Domain: String, Codable, CaseIterable, Identifiable {
+    // New simplified buckets (UI uses only these).
+    case general
     case life
     case food
     case fitness
@@ -55,6 +57,7 @@ enum Domain: String, Codable, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
+        case .general: "General"
         case .life: "Life"
         case .food: "Food"
         case .fitness: "Fitness"
@@ -89,8 +92,8 @@ struct AppConfig: Codable, Equatable {
     var apiKey: String = ""
     var providerSettings: [String: ProviderSetting] = [:]
 
-    var domains: Set<Domain> = [.ai, .web3, .investing]
-    var jargonLevel: Int = 2
+    var domains: Set<Domain> = [.ai, .web3]
+    var jargonLevel: Int = 1
     var voiceStyle: VoiceStyle = .tradfi
     var showNotes: Bool = false
     var glossaryText: String = ""
@@ -122,8 +125,8 @@ struct AppConfig: Codable, Equatable {
         apiKey = try container.decodeIfPresent(String.self, forKey: .apiKey) ?? ""
         providerSettings = try container.decodeIfPresent([String: ProviderSetting].self, forKey: .providerSettings) ?? [:]
 
-        domains = try container.decodeIfPresent(Set<Domain>.self, forKey: .domains) ?? [.ai, .web3, .investing]
-        jargonLevel = try container.decodeIfPresent(Int.self, forKey: .jargonLevel) ?? 2
+        domains = try container.decodeIfPresent(Set<Domain>.self, forKey: .domains) ?? [.ai, .web3]
+        jargonLevel = try container.decodeIfPresent(Int.self, forKey: .jargonLevel) ?? 1
         voiceStyle = try container.decodeIfPresent(VoiceStyle.self, forKey: .voiceStyle) ?? .tradfi
         showNotes = try container.decodeIfPresent(Bool.self, forKey: .showNotes) ?? false
         glossaryText = try container.decodeIfPresent(String.self, forKey: .glossaryText) ?? ""
@@ -164,6 +167,24 @@ struct AppConfig: Codable, Equatable {
         if copy.providerSettings.isEmpty {
             copy.providerSettings[copy.provider.rawValue] = ProviderSetting(baseURL: copy.baseURL, model: copy.model, apiKey: copy.apiKey)
         }
+
+        // Normalize domains to simplified buckets.
+        let hasAI = copy.domains.contains(.ai)
+        let hasWeb3 = copy.domains.contains(.web3)
+        let hasOtherLegacy = copy.domains.contains(where: { $0 != .ai && $0 != .web3 && $0 != .general })
+        var normalized: Set<Domain> = []
+        if hasAI { normalized.insert(.ai) }
+        if hasWeb3 { normalized.insert(.web3) }
+        if copy.domains.contains(.general) || hasOtherLegacy {
+            normalized.insert(.general)
+        }
+        if normalized.isEmpty { normalized = [.ai, .web3] }
+        copy.domains = normalized
+
+        // Normalize jargon to two levels: 0 (plain) or 1 (native).
+        let j = copy.jargonLevel
+        copy.jargonLevel = (j <= 0) ? 0 : 1
+
         return copy
     }
 }

@@ -134,18 +134,26 @@ struct Card<Content: View>: View {
 struct PageContainer<Content: View>: View {
     @Environment(\.colorScheme) private var colorScheme
     let title: String
+    let trailing: AnyView?
     @ViewBuilder let content: Content
 
-    init(title: String, @ViewBuilder content: () -> Content) {
+    init(title: String, trailing: AnyView? = nil, @ViewBuilder content: () -> Content) {
         self.title = title
+        self.trailing = trailing
         self.content = content()
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.sectionSpacing) {
-            Text(title)
-                .font(Theme.Fonts.pageTitle(colorScheme))
-                .padding(.bottom, 2)
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text(title)
+                    .font(Theme.Fonts.pageTitle(colorScheme))
+                    .padding(.bottom, 2)
+                Spacer()
+                if let trailing {
+                    trailing
+                }
+            }
 
             content
         }

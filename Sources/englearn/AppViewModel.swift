@@ -131,7 +131,7 @@ final class AppViewModel: ObservableObject {
     }
 
     func setJargonLevel(_ value: Int) {
-        updateConfig { $0.jargonLevel = value }
+        updateConfig { $0.jargonLevel = (value <= 0) ? 0 : 1 }
     }
 
     func setVoiceStyle(_ value: VoiceStyle) {

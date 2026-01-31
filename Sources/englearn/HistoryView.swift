@@ -23,7 +23,7 @@ struct HistoryView: View {
     }
 
     var body: some View {
-        PageContainer(title: "History") {
+        PageContainer(title: "History", trailing: AnyView(modelBadge)) {
             VStack(spacing: 0) {
                 Card(title: "Search", systemImage: "magnifyingglass") {
                     HStack(spacing: 10) {
@@ -52,6 +52,17 @@ struct HistoryView: View {
         .sheet(item: $presentedEntry) { entry in
             HistoryDetailSheetView(entry: entry)
         }
+    }
+
+    private var modelBadge: some View {
+        Text("\(viewModel.config.provider.displayName) • \(viewModel.config.model)")
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(.thinMaterial, in: Capsule(style: .continuous))
+            .overlay(Capsule(style: .continuous).strokeBorder(.white.opacity(0.10), lineWidth: 1))
+            .lineLimit(1)
     }
 
     private var historyWindowSplit: some View {

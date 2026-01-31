@@ -14,10 +14,11 @@ struct PromptBuilder {
     static func build(for input: String, config: AppConfig) -> Prompt {
         let isChinese = LanguageDetect.containsChineseCharacters(input)
 
-        let domains = config.domains.isEmpty ? "" : config.domains.map(\.displayName).sorted().joined(separator: ", ")
-        let jargon = max(0, min(3, config.jargonLevel))
+        let domains = DomainFormatting.describe(config.domains)
+        let jargon = max(0, min(1, config.jargonLevel))
         let voice = config.voiceStyle
         let mode = config.generateMode
+        let includeNotes = config.showNotes
 
         let glossary = GlossaryParser.parse(text: config.glossaryText)
         let glossaryBlock: String
@@ -30,7 +31,7 @@ struct PromptBuilder {
         let outputFormat: String = {
             switch mode {
             case .both:
-                return """
+                let base = """
 [spoken]
 ...
 [/spoken]
@@ -39,30 +40,48 @@ struct PromptBuilder {
 ...
 [/formal]
 
+"""
+                if includeNotes {
+                    return base + """
+
 [notes]
-- optional, keep <= 5 bullets
+- 2–5 bullets: learning feedback (grammar, clarity, natural phrasing)
 [/notes]
 """
+                }
+                return base
             case .spokenOnly:
-                return """
+                let base = """
 [spoken]
 ...
 [/spoken]
 
+"""
+                if includeNotes {
+                    return base + """
+
 [notes]
-- optional, keep <= 5 bullets
+- 2–5 bullets: learning feedback (grammar, clarity, natural phrasing)
 [/notes]
 """
+                }
+                return base
             case .formalOnly:
-                return """
+                let base = """
 [formal]
 ...
 [/formal]
 
+"""
+                if includeNotes {
+                    return base + """
+
 [notes]
-- optional, keep <= 5 bullets
+- 2–5 bullets: learning feedback (grammar, clarity, natural phrasing)
 [/notes]
 """
+                }
+                return base
             }
         }()
 
@@ -76,6 +95,7 @@ Rules:
 4) Output MUST use this exact tag format (no markdown, no code fences).
 5) Always include BOTH opening and closing tags. Do not omit closing tags.
 6) If a section is unavailable, leave it empty but still include its tags.
+\(includeNotes ? "7) Always include 2–5 bullets in [notes]." : "")
 
 \(outputFormat)
 
@@ -97,7 +117,7 @@ Spoken style: first-person, casual crypto-native tone; still clear. Short senten
         }()
 
         let jargonStyle = """
-Jargon level: \(jargon) (0 = plain, 3 = most industry-native). Use jargon only when it fits and stays accurate.
+Jargon level: \(jargon) (0 = plain, 1 = industry-native). Use jargon only when it fits and stays accurate.
 """
 
         let taskLine: String = {
@@ -149,6 +169,20 @@ Input:
         let which = missing == .spoken ? "spoken" : "formal"
         let system = base.system + "\n\nAdditional rule: Only output the [\(which)] section (and optional [notes]) using the same tag format."
         return Prompt(system: system, user: base.user)
+    }
+}
+
+private enum DomainFormatting {
+    static func describe(_ domains: Set<Domain>) -> String {
+        var items: [String] = []
+        if domains.contains(.ai) { items.append("AI") }
+        if domains.contains(.web3) { items.append("Web3") }
+        if domains.contains(.general) { items.append("General") }
+        // If legacy domains are still present for any reason, treat as General.
+        if domains.contains(where: { $0 != .ai && $0 != .web3 && $0 != .general }) {
+            if !items.contains("General") { items.append("General") }
+        }
+        return items.joined(separator: ", ")
     }
 }
 

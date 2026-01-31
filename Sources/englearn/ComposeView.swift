@@ -9,7 +9,7 @@ struct ComposeView: View {
             let editorHeight = max(260, min(460, proxy.size.height * 0.34))
 
             ScrollView {
-                PageContainer(title: "Write") {
+                PageContainer(title: "Write", trailing: AnyView(modelBadge)) {
                     VStack(spacing: 12) {
                         Card(title: "Draft", systemImage: "square.and.pencil") {
                             VStack(spacing: Theme.sectionSpacing) {
@@ -54,14 +54,14 @@ struct ComposeView: View {
                                 .disabled(viewModel.isGenerating)
                             }
 
-                            ViewThatFits(in: .horizontal) {
-                                controlsWide
-                                controlsCompact
-                            }
+                        ViewThatFits(in: .horizontal) {
+                            controlsWide
+                            controlsCompact
+                        }
 
-                            Text("Jargon: 0 = simple • 1 = light industry terms • 2 = natural finance/Web3/AI tone • 3 = heaviest (still accurate)")
-                                .foregroundStyle(.secondary)
-                                .font(.footnote)
+                        Text("Jargon: Plain = simple English • Native = industry-native tone (AI/Web3)")
+                            .foregroundStyle(.secondary)
+                            .font(.footnote)
 
                             if let errorMessage = viewModel.errorMessage {
                                 VStack(alignment: .leading, spacing: 6) {
@@ -149,10 +149,8 @@ struct ComposeView: View {
                     get: { viewModel.config.jargonLevel },
                     set: { viewModel.setJargonLevel($0) }
                 )) {
-                    Text("0 Plain").tag(0)
-                    Text("1 Light").tag(1)
-                    Text("2 Native").tag(2)
-                    Text("3 Heavy").tag(3)
+                    Text("Plain").tag(0)
+                    Text("Native").tag(1)
                 }
                 .pickerStyle(.menu)
                 .frame(width: 170, alignment: .leading)
@@ -190,10 +188,8 @@ struct ComposeView: View {
                         get: { viewModel.config.jargonLevel },
                         set: { viewModel.setJargonLevel($0) }
                     )) {
-                        Text("0 Plain").tag(0)
-                        Text("1 Light").tag(1)
-                        Text("2 Native").tag(2)
-                        Text("3 Heavy").tag(3)
+                        Text("Plain").tag(0)
+                        Text("Native").tag(1)
                     }
                     .pickerStyle(.menu)
                     .frame(width: 170, alignment: .leading)
@@ -213,6 +209,17 @@ struct ComposeView: View {
                 .frame(width: 180, alignment: .leading)
             }
         }
+    }
+
+    private var modelBadge: some View {
+        Text("\(viewModel.config.provider.displayName) • \(viewModel.config.model)")
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(.thinMaterial, in: Capsule(style: .continuous))
+            .overlay(Capsule(style: .continuous).strokeBorder(.white.opacity(0.10), lineWidth: 1))
+            .lineLimit(1)
     }
 }
 
@@ -269,17 +276,21 @@ private struct DomainsMenuPicker: View {
 
     var body: some View {
         Menu {
-            ForEach(Domain.allCases) { domain in
+            ForEach([Domain.ai, .web3, .general]) { domain in
                 Toggle(domain.displayName, isOn: Binding(
                     get: { selection.contains(domain) },
                     set: { isOn in
+                        // Normalize: keep only these three buckets.
+                        selection.subtract(selection.filter { $0 != .ai && $0 != .web3 && $0 != .general })
                         if isOn { selection.insert(domain) } else { selection.remove(domain) }
+                        if selection.isEmpty { selection = [.ai, .web3] }
                     }
                 ))
             }
             Divider()
-            Button("Select all") { selection = Set(Domain.allCases) }
-            Button("Clear") { selection.removeAll() }
+            Button("AI + Web3") { selection = [.ai, .web3] }
+            Button("All") { selection = [.ai, .web3, .general] }
+            Button("Clear") { selection = [.ai, .web3] }
         } label: {
             HStack(spacing: 6) {
                 Text(selectionSummary)
@@ -294,7 +305,8 @@ private struct DomainsMenuPicker: View {
     }
 
     private var selectionSummary: String {
-        let names = selection.map(\.displayName).sorted()
+        let normalized: [Domain] = [.ai, .web3, .general].filter { selection.contains($0) }
+        let names = normalized.map(\.displayName)
         return names.isEmpty ? "None" : names.joined(separator: ", ")
     }
 }

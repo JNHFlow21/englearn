@@ -8,7 +8,7 @@ struct SettingsView: View {
 
 	var body: some View {
 		ScrollView {
-            PageContainer(title: "Settings") {
+            PageContainer(title: "Settings", trailing: AnyView(modelBadge)) {
                 VStack(alignment: .leading, spacing: Theme.sectionSpacing) {
                     Card(title: "Provider", systemImage: "bolt.horizontal") {
                         VStack(alignment: .leading, spacing: 10) {
@@ -157,5 +157,16 @@ struct SettingsView: View {
         .onAppear {
             savedHint = nil
         }
+    }
+
+    private var modelBadge: some View {
+        Text("\(viewModel.config.provider.displayName) • \(viewModel.config.model)")
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(.thinMaterial, in: Capsule(style: .continuous))
+            .overlay(Capsule(style: .continuous).strokeBorder(.white.opacity(0.10), lineWidth: 1))
+            .lineLimit(1)
     }
 }
