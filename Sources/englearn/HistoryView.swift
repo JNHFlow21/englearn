@@ -27,22 +27,29 @@ struct HistoryView: View {
 
             Divider()
 
-            ViewThatFits(in: .horizontal) {
-                HSplitView {
-                    historyList
-                        .frame(minWidth: 240, idealWidth: 300)
+            GeometryReader { proxy in
+                let useHorizontalSplit = proxy.size.width >= 860
+                Group {
+                    if useHorizontalSplit {
+                        HSplitView {
+                            historyList
+                                .frame(minWidth: 240, idealWidth: 300)
 
-                    historyDetail
-                        .frame(minWidth: 360)
+                            historyDetail
+                                .frame(minWidth: 360)
+                        }
+                    } else {
+                        VSplitView {
+                            historyList
+                                .frame(minHeight: 220, idealHeight: 260)
+
+                            historyDetail
+                                .frame(minHeight: 240)
+                        }
+                    }
                 }
-
-                VSplitView {
-                    historyList
-                        .frame(minHeight: 220, idealHeight: 260)
-
-                    historyDetail
-                        .frame(minHeight: 240)
-                }
+                // Avoid SwiftUI trying to diff/morph HSplitView<->VSplitView during live resize/fullscreen.
+                .id(useHorizontalSplit ? "history.hsplit" : "history.vsplit")
             }
         }
         .onAppear { reload() }
