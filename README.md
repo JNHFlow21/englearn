@@ -11,13 +11,11 @@
 
 ## 截图
 
-把截图放到 `assets/screenshots/`（例如：`assets/screenshots/write.png`），然后在这里用相对路径引用即可：
+![Write (English)](assets/screenshots/writeeng.png)
 
-```md
-![Write](assets/screenshots/write.png)
 ![History](assets/screenshots/history.png)
+
 ![Settings](assets/screenshots/settings.png)
-```
 
 ## 安装（推荐）
 

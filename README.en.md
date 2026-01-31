@@ -11,13 +11,11 @@ Supports **Gemini** and **DeepSeek** using your own API keys (stored locally in 
 
 ## Screenshots
 
-Put screenshots under `assets/screenshots/` (e.g. `assets/screenshots/write.png`) and reference them here:
+![Write (English)](assets/screenshots/writeeng.png)
 
-```md
-![Write](assets/screenshots/write.png)
 ![History](assets/screenshots/history.png)
+
 ![Settings](assets/screenshots/settings.png)
-```
 
 ## Install (recommended)
 
