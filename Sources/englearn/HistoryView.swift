@@ -13,13 +13,15 @@ struct HistoryView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 10) {
-                TextField("Search history…", text: $query)
-                    .textFieldStyle(.roundedBorder)
-                Button("Clear") { query = "" }
-                    .disabled(query.isEmpty)
-                Spacer()
-                Button("Refresh") { reload() }
+            Card(title: "History", systemImage: "clock.arrow.circlepath") {
+                HStack(spacing: 10) {
+                    TextField("Search history…", text: $query)
+                        .textFieldStyle(.roundedBorder)
+                    Button("Clear") { query = "" }
+                        .disabled(query.isEmpty)
+                    Spacer()
+                    Button("Refresh") { reload() }
+                }
             }
             .padding()
 

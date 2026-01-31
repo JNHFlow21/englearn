@@ -6,13 +6,13 @@ struct EnglearnApp: App {
 
     var body: some Scene {
         WindowGroup("Englearn") {
-            RootView()
+            RootView(context: .window)
                 .environmentObject(viewModel)
                 .frame(minWidth: 900, minHeight: 720)
         }
 
         MenuBarExtra("Englearn", systemImage: "text.bubble") {
-            RootView()
+            RootView(context: .menuBar)
                 .environmentObject(viewModel)
                 .frame(minWidth: 560, minHeight: 640)
         }

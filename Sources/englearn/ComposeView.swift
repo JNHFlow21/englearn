@@ -7,72 +7,34 @@ struct ComposeView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 12) {
-                GroupBox {
-                    VStack(spacing: 10) {
-                        TextEditor(text: $viewModel.inputText)
-                            .font(.system(.body, design: .monospaced))
-                            .frame(height: 180)
-                            .overlay {
-                                if viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                    Text("Write in English (fix & polish) or Chinese (translate)…")
-                                        .foregroundStyle(.secondary)
-                                        .padding(8)
-                                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                                        .allowsHitTesting(false)
+                Card(title: "Draft", systemImage: "square.and.pencil") {
+                    VStack(spacing: Theme.sectionSpacing) {
+                        ZStack(alignment: .topLeading) {
+                            RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                                .fill(.quaternary.opacity(0.25))
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                                        .strokeBorder(.primary.opacity(0.08), lineWidth: 1)
                                 }
-                            }
 
-                        VStack(alignment: .leading, spacing: 10) {
-                            LabeledContent("Domains") {
-                                DomainsMenuPicker(selection: Binding(
-                                    get: { viewModel.config.domains },
-                                    set: { viewModel.setDomains($0) }
-                                ))
-                            }
+                            TextEditor(text: $viewModel.inputText)
+                                .font(.system(.body, design: .monospaced))
+                                .scrollContentBackground(.hidden)
+                                .padding(6)
 
-                            LabeledContent("Jargon") {
-                                Picker("", selection: Binding(
-                                    get: { viewModel.config.jargonLevel },
-                                    set: { viewModel.setJargonLevel($0) }
-                                )) {
-                                    Text("0 Plain").tag(0)
-                                    Text("1 Light").tag(1)
-                                    Text("2 Native").tag(2)
-                                    Text("3 Heavy").tag(3)
-                                }
-                                .pickerStyle(.menu)
-                                .frame(width: 180, alignment: .leading)
+                            if viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                Text("Write in English (fix & polish) or Chinese (translate)…")
+                                    .foregroundStyle(.secondary)
+                                    .padding(12)
+                                    .allowsHitTesting(false)
                             }
-
-                            Text("0 = simple • 1 = light industry terms • 2 = natural finance/Web3/AI tone • 3 = heaviest (still accurate)")
-                                .foregroundStyle(.secondary)
-                                .font(.footnote)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .frame(height: 200)
 
                         HStack(alignment: .center, spacing: 12) {
-                            HStack(spacing: 10) {
-                                Button("Paste") { viewModel.pasteFromClipboard() }
-                                Button("Clear") { viewModel.clearAll() }
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-
-                            HStack(spacing: 12) {
-                                Text("Output")
-                                    .foregroundStyle(.secondary)
-                                Picker("", selection: Binding(
-                                    get: { viewModel.config.generateMode },
-                                    set: { viewModel.setGenerateMode($0) }
-                                )) {
-                                    ForEach(GenerateMode.allCases) { mode in
-                                        Text(mode.displayName).tag(mode)
-                                    }
-                                }
-                                .pickerStyle(.segmented)
-                                .frame(width: 240)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .center)
-
+                            Button("Paste") { viewModel.pasteFromClipboard() }
+                            Button("Clear") { viewModel.clearAll() }
+                            Spacer()
                             Button {
                                 viewModel.generate()
                             } label: {
@@ -86,8 +48,45 @@ struct ComposeView: View {
                             .buttonStyle(.borderedProminent)
                             .keyboardShortcut(.defaultAction)
                             .disabled(viewModel.isGenerating)
-                            .frame(maxWidth: .infinity, alignment: .trailing)
                         }
+
+                        HStack(alignment: .firstTextBaseline, spacing: 12) {
+                            LabeledContent("Domains") {
+                                DomainsMenuPicker(selection: Binding(
+                                    get: { viewModel.config.domains },
+                                    set: { viewModel.setDomains($0) }
+                                ))
+                            }
+                            LabeledContent("Jargon") {
+                                Picker("", selection: Binding(
+                                    get: { viewModel.config.jargonLevel },
+                                    set: { viewModel.setJargonLevel($0) }
+                                )) {
+                                    Text("0 Plain").tag(0)
+                                    Text("1 Light").tag(1)
+                                    Text("2 Native").tag(2)
+                                    Text("3 Heavy").tag(3)
+                                }
+                                .pickerStyle(.menu)
+                                .frame(width: 170, alignment: .leading)
+                            }
+                            LabeledContent("Output") {
+                                Picker("", selection: Binding(
+                                    get: { viewModel.config.generateMode },
+                                    set: { viewModel.setGenerateMode($0) }
+                                )) {
+                                    ForEach(GenerateMode.allCases) { mode in
+                                        Text(mode.displayName).tag(mode)
+                                    }
+                                }
+                                .pickerStyle(.segmented)
+                                .frame(width: 240)
+                            }
+                        }
+
+                        Text("Jargon: 0 = simple • 1 = light industry terms • 2 = natural finance/Web3/AI tone • 3 = heaviest (still accurate)")
+                            .foregroundStyle(.secondary)
+                            .font(.footnote)
 
                         if let errorMessage = viewModel.errorMessage {
                             VStack(alignment: .leading, spacing: 6) {
@@ -106,12 +105,9 @@ struct ComposeView: View {
                                     Spacer()
                                 }
                             }
+                            .padding(.top, 2)
                         }
                     }
-                    .padding(.vertical, 2)
-                } label: {
-                    Text("Input")
-                        .font(.headline)
                 }
 
                 OutputSectionView(
@@ -137,7 +133,7 @@ struct ComposeView: View {
                 )
 
                 if viewModel.config.showNotes, !viewModel.notes.isEmpty {
-                    GroupBox("Notes") {
+                    Card(title: "Notes", systemImage: "sparkles") {
                         VStack(alignment: .leading, spacing: 6) {
                             ForEach(viewModel.notes, id: \.self) { note in
                                 Text("• \(note)")
@@ -175,31 +171,35 @@ private struct OutputSectionView: View {
     let compareAction: () -> Void
 
     var body: some View {
-        GroupBox {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Text(title)
-                        .font(.headline)
-                    Spacer()
-                    if canCompare {
-                        Button("Compare") { compareAction() }
-                            .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    }
-                    Button(isSpeaking ? "Stop" : "Speak") { speakAction() }
-                        .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    Button("Copy") { copyAction() }
-                        .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
-                Text(text.isEmpty ? "—" : text)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .textSelection(.enabled)
-                    .padding(.vertical, 2)
-            }
+        Card(
+            title: title,
+            systemImage: target == .spoken ? "quote.bubble" : "doc.text",
+            trailing: AnyView(trailingButtons)
+        ) {
+            Text(text.isEmpty ? "—" : text)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .textSelection(.enabled)
+                .padding(.vertical, 2)
         }
     }
 
     private var isSpeaking: Bool {
         speech.isSpeaking && speech.currentTarget == target
+    }
+
+    private var trailingButtons: some View {
+        HStack(spacing: 8) {
+            if canCompare {
+                Button("Compare") { compareAction() }
+                    .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
+            Button(isSpeaking ? "Stop" : "Speak") { speakAction() }
+                .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            Button("Copy") { copyAction() }
+                .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        }
+        .buttonStyle(.bordered)
+        .controlSize(.small)
     }
 }
 
