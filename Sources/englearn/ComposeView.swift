@@ -50,38 +50,9 @@ struct ComposeView: View {
                             .disabled(viewModel.isGenerating)
                         }
 
-                        HStack(alignment: .firstTextBaseline, spacing: 12) {
-                            LabeledContent("Domains") {
-                                DomainsMenuPicker(selection: Binding(
-                                    get: { viewModel.config.domains },
-                                    set: { viewModel.setDomains($0) }
-                                ))
-                            }
-                            LabeledContent("Jargon") {
-                                Picker("", selection: Binding(
-                                    get: { viewModel.config.jargonLevel },
-                                    set: { viewModel.setJargonLevel($0) }
-                                )) {
-                                    Text("0 Plain").tag(0)
-                                    Text("1 Light").tag(1)
-                                    Text("2 Native").tag(2)
-                                    Text("3 Heavy").tag(3)
-                                }
-                                .pickerStyle(.menu)
-                                .frame(width: 170, alignment: .leading)
-                            }
-                            LabeledContent("Output") {
-                                Picker("", selection: Binding(
-                                    get: { viewModel.config.generateMode },
-                                    set: { viewModel.setGenerateMode($0) }
-                                )) {
-                                    ForEach(GenerateMode.allCases) { mode in
-                                        Text(mode.displayName).tag(mode)
-                                    }
-                                }
-                                .pickerStyle(.segmented)
-                                .frame(width: 240)
-                            }
+                        ViewThatFits(in: .horizontal) {
+                            controlsWide
+                            controlsCompact
                         }
 
                         Text("Jargon: 0 = simple • 1 = light industry terms • 2 = natural finance/Web3/AI tone • 3 = heaviest (still accurate)")
@@ -156,6 +127,86 @@ struct ComposeView: View {
                 original: viewModel.lastSourceText,
                 revised: revised
             )
+        }
+    }
+
+    private var controlsWide: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 16) {
+            FieldLabel("Domains") {
+                DomainsMenuPicker(selection: Binding(
+                    get: { viewModel.config.domains },
+                    set: { viewModel.setDomains($0) }
+                ))
+            }
+
+            FieldLabel("Jargon") {
+                Picker("", selection: Binding(
+                    get: { viewModel.config.jargonLevel },
+                    set: { viewModel.setJargonLevel($0) }
+                )) {
+                    Text("0 Plain").tag(0)
+                    Text("1 Light").tag(1)
+                    Text("2 Native").tag(2)
+                    Text("3 Heavy").tag(3)
+                }
+                .pickerStyle(.menu)
+                .frame(width: 170, alignment: .leading)
+            }
+
+            Spacer(minLength: 0)
+
+            FieldLabel("Output") {
+                Picker("", selection: Binding(
+                    get: { viewModel.config.generateMode },
+                    set: { viewModel.setGenerateMode($0) }
+                )) {
+                    ForEach(GenerateMode.allCases) { mode in
+                        Text(mode.displayName).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .frame(minWidth: 210, idealWidth: 240, maxWidth: 320)
+            }
+        }
+    }
+
+    private var controlsCompact: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline, spacing: 16) {
+                FieldLabel("Domains") {
+                    DomainsMenuPicker(selection: Binding(
+                        get: { viewModel.config.domains },
+                        set: { viewModel.setDomains($0) }
+                    ))
+                }
+
+                FieldLabel("Jargon") {
+                    Picker("", selection: Binding(
+                        get: { viewModel.config.jargonLevel },
+                        set: { viewModel.setJargonLevel($0) }
+                    )) {
+                        Text("0 Plain").tag(0)
+                        Text("1 Light").tag(1)
+                        Text("2 Native").tag(2)
+                        Text("3 Heavy").tag(3)
+                    }
+                    .pickerStyle(.menu)
+                    .frame(width: 170, alignment: .leading)
+                }
+            }
+
+            FieldLabel("Output") {
+                Picker("", selection: Binding(
+                    get: { viewModel.config.generateMode },
+                    set: { viewModel.setGenerateMode($0) }
+                )) {
+                    ForEach(GenerateMode.allCases) { mode in
+                        Text(mode.displayName).tag(mode)
+                    }
+                }
+                .pickerStyle(.menu)
+                .frame(width: 180, alignment: .leading)
+            }
         }
     }
 }
@@ -240,5 +291,25 @@ private struct DomainsMenuPicker: View {
     private var selectionSummary: String {
         let names = selection.map(\.displayName).sorted()
         return names.isEmpty ? "None" : names.joined(separator: ", ")
+    }
+}
+
+private struct FieldLabel<Content: View>: View {
+    let title: String
+    @ViewBuilder let content: Content
+
+    init(_ title: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.content = content()
+    }
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            Text(title)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .frame(width: 62, alignment: .leading)
+            content
+        }
     }
 }
