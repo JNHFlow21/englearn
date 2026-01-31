@@ -1,6 +1,6 @@
 # Privacy
 
-Englearn runs locally on your Mac. It only sends text to the model provider you choose (Gemini or DeepSeek) when you press **Generate** or **Test Connection**.
+Thought2English runs locally on your Mac. It only sends text to the model provider you choose (Gemini or DeepSeek) when you press **Generate** or **Test Connection**.
 
 ## What is stored locally
 
@@ -20,5 +20,4 @@ Englearn runs locally on your Mac. It only sends text to the model provider you 
 ## Delete your data
 
 - Clear API key: Settings → **Clear Key**
-- Clear history: delete the `history.sqlite` file in your `~/Library/Application Support/Englearn/` directory
-
+- Clear history: delete the `history.sqlite` file in your `~/Library/Application Support/Thought2English/` directory

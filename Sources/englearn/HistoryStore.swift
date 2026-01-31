@@ -16,7 +16,7 @@ struct HistoryEntry: Identifiable, Equatable {
 
 final class HistoryStore: @unchecked Sendable {
     private var db: OpaquePointer?
-    private let queue = DispatchQueue(label: "englearn.history.sqlite")
+    private let queue = DispatchQueue(label: "thought2english.history.sqlite")
 
     private let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
@@ -251,9 +251,25 @@ final class HistoryStore: @unchecked Sendable {
             appropriateFor: nil,
             create: true
         )
-        return appSupport
-            .appending(path: "Englearn", directoryHint: .isDirectory)
-            .appending(path: "history.sqlite", directoryHint: .notDirectory)
+        let newDir = appSupport.appending(path: "Thought2English", directoryHint: .isDirectory)
+        let newURL = newDir.appending(path: "history.sqlite", directoryHint: .notDirectory)
+
+        // Migrate from the old folder name if present.
+        let oldDir = appSupport.appending(path: "Englearn", directoryHint: .isDirectory)
+        let oldURL = oldDir.appending(path: "history.sqlite", directoryHint: .notDirectory)
+
+        if FileManager.default.fileExists(atPath: oldURL.path),
+           !FileManager.default.fileExists(atPath: newURL.path)
+        {
+            do {
+                try FileManager.default.createDirectory(at: newDir, withIntermediateDirectories: true)
+                try FileManager.default.moveItem(at: oldURL, to: newURL)
+            } catch {
+                // Best-effort migration. If it fails, continue using the new location.
+            }
+        }
+
+        return newURL
     }
 }
 

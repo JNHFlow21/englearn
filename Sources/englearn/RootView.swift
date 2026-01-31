@@ -72,7 +72,7 @@ struct RootView: View {
                                 .tag(item.id)
                         }
                     }
-                    .navigationTitle("Englearn")
+                    .navigationTitle("Thought2English")
                     .frame(minWidth: 220)
                 } detail: {
                     Group {

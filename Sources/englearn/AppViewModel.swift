@@ -46,7 +46,7 @@ final class AppViewModel: ObservableObject {
     }
 
     var buildInfo: String {
-        "englearn • \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev")"
+        "Thought2English • \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev")"
     }
 
     var canRetryLastRequest: Bool {

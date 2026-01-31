@@ -2,6 +2,7 @@
 /.build
 /Packages
 /dist
+.build/AppIcon.iconset
 xcuserdata/
 DerivedData/
 .swiftpm/configuration/registries.json
