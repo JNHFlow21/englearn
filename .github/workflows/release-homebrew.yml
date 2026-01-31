@@ -58,7 +58,8 @@ jobs:
             exit 0
           fi
           TAP_DIR="$(mktemp -d)"
-          git clone "https://${HOMEBREW_TAP_TOKEN}@github.com/${TAP_REPO}.git" "$TAP_DIR"
+          TAP_URL="https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/${TAP_REPO}.git"
+          git clone "$TAP_URL" "$TAP_DIR"
           cd "$TAP_DIR"
 
           mkdir -p Casks
@@ -84,6 +85,7 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "$TAP_URL"
           git add Casks/thought2english.rb
           git commit -m "Update thought2english to ${APP_VERSION}" || exit 0
           git push
