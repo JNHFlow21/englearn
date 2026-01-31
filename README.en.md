@@ -26,6 +26,19 @@ swift run
 open dist/Thought2English.app
 ```
 
+## Install via Homebrew (recommended)
+
+```bash
+brew tap jnhflow21/thought2english
+brew install --cask thought2english
+```
+
+Upgrade:
+
+```bash
+brew upgrade --cask thought2english
+```
+
 ## Configuration
 
 Configure in **Settings**:
@@ -56,4 +69,3 @@ Provide a 1024×1024 PNG (centered with generous padding, strong contrast for bo
 ## Privacy
 
 See `PRIVACY.md`.
-

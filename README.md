@@ -26,6 +26,19 @@ swift run
 open dist/Thought2English.app
 ```
 
+## Homebrew 安装（推荐）
+
+```bash
+brew tap jnhflow21/thought2english
+brew install --cask thought2english
+```
+
+更新到最新版本：
+
+```bash
+brew upgrade --cask thought2english
+```
+
 ## 配置
 
 在 **Settings** 页配置：
@@ -56,4 +69,3 @@ open dist/Thought2English.app
 ## 隐私
 
 见 `PRIVACY.md`。
-
