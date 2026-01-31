@@ -6,116 +6,117 @@ struct ComposeView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 12) {
-                Card(title: "Draft", systemImage: "square.and.pencil") {
-                    VStack(spacing: Theme.sectionSpacing) {
-                        ZStack(alignment: .topLeading) {
-                            RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                                .fill(.quaternary.opacity(0.25))
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                                        .strokeBorder(.primary.opacity(0.08), lineWidth: 1)
-                                }
+            PageContainer(title: "Write") {
+                VStack(spacing: 12) {
+                    Card(title: "Draft", systemImage: "square.and.pencil") {
+                        VStack(spacing: Theme.sectionSpacing) {
+                            ZStack(alignment: .topLeading) {
+                                RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                                    .fill(.quaternary.opacity(0.25))
+                                    .overlay {
+                                        RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                                            .strokeBorder(.primary.opacity(0.08), lineWidth: 1)
+                                    }
 
-                            TextEditor(text: $viewModel.inputText)
-                                .font(.system(.body, design: .monospaced))
-                                .scrollContentBackground(.hidden)
-                                .padding(6)
+                                TextEditor(text: $viewModel.inputText)
+                                    .font(.system(.body, design: .monospaced))
+                                    .scrollContentBackground(.hidden)
+                                    .padding(6)
 
-                            if viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                Text("Write in English (fix & polish) or Chinese (translate)…")
-                                    .foregroundStyle(.secondary)
-                                    .padding(12)
-                                    .allowsHitTesting(false)
-                            }
-                        }
-                        .frame(height: 200)
-
-                        HStack(alignment: .center, spacing: 12) {
-                            Button("Paste") { viewModel.pasteFromClipboard() }
-                            Button("Clear") { viewModel.clearAll() }
-                            Spacer()
-                            Button {
-                                viewModel.generate()
-                            } label: {
-                                if viewModel.isGenerating {
-                                    ProgressView()
-                                        .controlSize(.small)
-                                } else {
-                                    Text("Generate")
-                                }
-                            }
-                            .buttonStyle(.borderedProminent)
-                            .keyboardShortcut(.defaultAction)
-                            .disabled(viewModel.isGenerating)
-                        }
-
-                        ViewThatFits(in: .horizontal) {
-                            controlsWide
-                            controlsCompact
-                        }
-
-                        Text("Jargon: 0 = simple • 1 = light industry terms • 2 = natural finance/Web3/AI tone • 3 = heaviest (still accurate)")
-                            .foregroundStyle(.secondary)
-                            .font(.footnote)
-
-                        if let errorMessage = viewModel.errorMessage {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text(errorMessage)
-                                    .foregroundStyle(.red)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .lineLimit(3)
-                                if let suggestion = viewModel.errorSuggestion {
-                                    Text(suggestion)
+                                if viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                    Text("Write in English (fix & polish) or Chinese (translate)…")
                                         .foregroundStyle(.secondary)
-                                        .font(.footnote)
-                                }
-                                HStack {
-                                    Button("Retry") { viewModel.retryLast() }
-                                        .disabled(!viewModel.canRetryLastRequest || viewModel.isGenerating)
-                                    Spacer()
+                                        .padding(12)
+                                        .allowsHitTesting(false)
                                 }
                             }
-                            .padding(.top, 2)
+                            .frame(height: 200)
+
+                            HStack(alignment: .center, spacing: 12) {
+                                Button("Paste") { viewModel.pasteFromClipboard() }
+                                Button("Clear") { viewModel.clearAll() }
+                                Spacer()
+                                Button {
+                                    viewModel.generate()
+                                } label: {
+                                    if viewModel.isGenerating {
+                                        ProgressView()
+                                            .controlSize(.small)
+                                    } else {
+                                        Text("Generate")
+                                    }
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .keyboardShortcut(.defaultAction)
+                                .disabled(viewModel.isGenerating)
+                            }
+
+                            ViewThatFits(in: .horizontal) {
+                                controlsWide
+                                controlsCompact
+                            }
+
+                            Text("Jargon: 0 = simple • 1 = light industry terms • 2 = natural finance/Web3/AI tone • 3 = heaviest (still accurate)")
+                                .foregroundStyle(.secondary)
+                                .font(.footnote)
+
+                            if let errorMessage = viewModel.errorMessage {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text(errorMessage)
+                                        .foregroundStyle(.red)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .lineLimit(3)
+                                    if let suggestion = viewModel.errorSuggestion {
+                                        Text(suggestion)
+                                            .foregroundStyle(.secondary)
+                                            .font(.footnote)
+                                    }
+                                    HStack {
+                                        Button("Retry") { viewModel.retryLast() }
+                                            .disabled(!viewModel.canRetryLastRequest || viewModel.isGenerating)
+                                        Spacer()
+                                    }
+                                }
+                                .padding(.top, 2)
+                            }
                         }
                     }
-                }
 
-                OutputSectionView(
-                    title: "Spoken Script",
-                    text: viewModel.spokenText,
-                    copyAction: viewModel.copySpoken,
-                    speakAction: viewModel.toggleSpeakSpoken,
-                    speech: viewModel.speech,
-                    target: .spoken,
-                    canCompare: !viewModel.lastSourceIsChinese && !viewModel.lastSourceText.isEmpty,
-                    compareAction: { compareTarget = .spoken }
-                )
+                    OutputSectionView(
+                        title: "Spoken Script",
+                        text: viewModel.spokenText,
+                        copyAction: viewModel.copySpoken,
+                        speakAction: viewModel.toggleSpeakSpoken,
+                        speech: viewModel.speech,
+                        target: .spoken,
+                        canCompare: !viewModel.lastSourceIsChinese && !viewModel.lastSourceText.isEmpty,
+                        compareAction: { compareTarget = .spoken }
+                    )
 
-                OutputSectionView(
-                    title: "Formal Writing",
-                    text: viewModel.formalText,
-                    copyAction: viewModel.copyFormal,
-                    speakAction: viewModel.toggleSpeakFormal,
-                    speech: viewModel.speech,
-                    target: .formal,
-                    canCompare: !viewModel.lastSourceIsChinese && !viewModel.lastSourceText.isEmpty,
-                    compareAction: { compareTarget = .formal }
-                )
+                    OutputSectionView(
+                        title: "Formal Writing",
+                        text: viewModel.formalText,
+                        copyAction: viewModel.copyFormal,
+                        speakAction: viewModel.toggleSpeakFormal,
+                        speech: viewModel.speech,
+                        target: .formal,
+                        canCompare: !viewModel.lastSourceIsChinese && !viewModel.lastSourceText.isEmpty,
+                        compareAction: { compareTarget = .formal }
+                    )
 
-                if viewModel.config.showNotes, !viewModel.notes.isEmpty {
-                    Card(title: "Notes", systemImage: "sparkles") {
-                        VStack(alignment: .leading, spacing: 6) {
-                            ForEach(viewModel.notes, id: \.self) { note in
-                                Text("• \(note)")
-                                    .frame(maxWidth: .infinity, alignment: .leading)
+                    if viewModel.config.showNotes, !viewModel.notes.isEmpty {
+                        Card(title: "Notes", systemImage: "sparkles") {
+                            VStack(alignment: .leading, spacing: 6) {
+                                ForEach(viewModel.notes, id: \.self) { note in
+                                    Text("• \(note)")
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                }
                             }
+                            .padding(.vertical, 4)
                         }
-                        .padding(.vertical, 4)
                     }
                 }
             }
-            .padding()
         }
         .sheet(item: Binding(
             get: { compareTarget.map(CompareTarget.init) },
