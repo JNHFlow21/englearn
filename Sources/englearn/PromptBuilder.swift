@@ -170,6 +170,40 @@ Input:
         let system = base.system + "\n\nAdditional rule: Only output the [\(which)] section (and optional [notes]) using the same tag format."
         return Prompt(system: system, user: base.user)
     }
+
+    static func buildNotesOnly(for input: String, config: AppConfig) -> Prompt {
+        let glossary = GlossaryParser.parse(text: config.glossaryText)
+        let glossaryBlock: String
+        if glossary.isEmpty {
+            glossaryBlock = "No glossary provided."
+        } else {
+            glossaryBlock = glossary.map { "- \($0.term): \($0.preferred)" }.joined(separator: "\n")
+        }
+
+        let system = """
+You are an English writing coach.
+
+Rules:
+1) Preserve meaning. Do NOT add facts.
+2) Provide 2–5 bullets of learning feedback about grammar, clarity, and natural phrasing.
+3) Output MUST use this exact tag format (no markdown, no code fences):
+
+[notes]
+- ...
+[/notes]
+
+Glossary:
+\(glossaryBlock)
+"""
+
+        let user = """
+Task: Read the input and produce [notes] only.
+
+Input:
+\(input)
+"""
+        return Prompt(system: system, user: user)
+    }
 }
 
 private enum DomainFormatting {

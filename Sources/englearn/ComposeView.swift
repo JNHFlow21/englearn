@@ -271,38 +271,31 @@ private struct CompareTarget: Identifiable {
     var id: String { target.rawValue }
 }
 
-private struct DomainsMenuPicker: View {
-    @Binding var selection: Set<Domain>
+	private struct DomainsMenuPicker: View {
+	    @Binding var selection: Set<Domain>
 
-    var body: some View {
-        Menu {
-            ForEach([Domain.ai, .web3, .general]) { domain in
-                Toggle(domain.displayName, isOn: Binding(
-                    get: { selection.contains(domain) },
-                    set: { isOn in
-                        // Normalize: keep only these three buckets.
-                        selection.subtract(selection.filter { $0 != .ai && $0 != .web3 && $0 != .general })
-                        if isOn { selection.insert(domain) } else { selection.remove(domain) }
-                        if selection.isEmpty { selection = [.ai, .web3] }
-                    }
-                ))
-            }
-            Divider()
-            Button("AI + Web3") { selection = [.ai, .web3] }
-            Button("All") { selection = [.ai, .web3, .general] }
-            Button("Clear") { selection = [.ai, .web3] }
-        } label: {
-            HStack(spacing: 6) {
-                Text(selectionSummary)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(.secondary)
-            }
-            .frame(width: 260, alignment: .leading)
-        }
-    }
+	    var body: some View {
+	        Menu {
+	            ForEach([Domain.ai, .web3, .general]) { domain in
+	                Toggle(domain.displayName, isOn: Binding(
+	                    get: { selection.contains(domain) },
+	                    set: { isOn in
+	                        // Keep only the simplified buckets.
+	                        selection = selection.intersection([.ai, .web3, .general])
+	                        if isOn { selection.insert(domain) } else { selection.remove(domain) }
+	                    }
+	                ))
+	            }
+	            Divider()
+	            Button("All") { selection = [.ai, .web3, .general] }
+	            Button("Clear") { selection.removeAll() }
+	        } label: {
+	            Text(selectionSummary)
+	                .lineLimit(1)
+	                .truncationMode(.tail)
+	                .frame(width: 260, alignment: .leading)
+	        }
+	    }
 
     private var selectionSummary: String {
         let normalized: [Domain] = [.ai, .web3, .general].filter { selection.contains($0) }

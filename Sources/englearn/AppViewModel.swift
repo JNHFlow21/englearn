@@ -265,6 +265,22 @@ final class AppViewModel: ObservableObject {
                     }
                 }
 
+                if config.showNotes, parsed.notes.isEmpty {
+                    let follow = PromptBuilder.buildNotesOnly(for: input, config: config)
+                    let raw2 = try await llm.generate(
+                        provider: config.provider,
+                        baseURL: config.baseURL,
+                        model: config.model,
+                        apiKey: apiKey,
+                        system: follow.system,
+                        user: follow.user
+                    )
+                    let parsed2 = OutputParser.parse(rawText: raw2)
+                    if !parsed2.notes.isEmpty {
+                        parsed = ParsedOutput(spoken: parsed.spoken, formal: parsed.formal, notes: parsed2.notes)
+                    }
+                }
+
                 spokenText = parsed.spoken
                 formalText = parsed.formal
                 notes = parsed.notes
