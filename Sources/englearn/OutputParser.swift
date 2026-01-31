@@ -35,11 +35,11 @@ enum OutputParser {
     }
 
     private static func parseTagged(from text: String) -> ParsedOutput? {
-        let spoken = extractTag("spoken", from: text)
-        let formal = extractTag("formal", from: text)
+        let spoken = extractTagRelaxed("spoken", from: text)
+        let formal = extractTagRelaxed("formal", from: text)
         if spoken == nil && formal == nil { return nil }
 
-        let notesText = extractTag("notes", from: text) ?? ""
+        let notesText = extractTagRelaxed("notes", from: text) ?? ""
         let notes = notesText
             .split(separator: "\n")
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -47,18 +47,48 @@ enum OutputParser {
             .filter { !$0.isEmpty }
 
         return ParsedOutput(
-            spoken: (spoken ?? "").trimmingCharacters(in: .whitespacesAndNewlines),
-            formal: (formal ?? "").trimmingCharacters(in: .whitespacesAndNewlines),
+            spoken: sanitizeSection(spoken ?? ""),
+            formal: sanitizeSection(formal ?? ""),
             notes: notes
         )
     }
 
-    private static func extractTag(_ name: String, from text: String) -> String? {
+    private static func extractTagRelaxed(_ name: String, from text: String) -> String? {
+        let lower = text.lowercased()
         let open = "[\(name)]"
         let close = "[/\(name)]"
-        guard let openRange = text.range(of: open) else { return nil }
-        guard let closeRange = text.range(of: close, range: openRange.upperBound..<text.endIndex) else { return nil }
-        return String(text[openRange.upperBound..<closeRange.lowerBound])
+
+        guard let openLowerRange = lower.range(of: open) else { return nil }
+        let openEnd = openLowerRange.upperBound
+        let startIndex = text.index(text.startIndex, offsetBy: lower.distance(from: lower.startIndex, to: openEnd))
+
+        if let closeLowerRange = lower.range(of: close, range: openEnd..<lower.endIndex) {
+            let closeStart = closeLowerRange.lowerBound
+            let endIndex = text.index(text.startIndex, offsetBy: lower.distance(from: lower.startIndex, to: closeStart))
+            return String(text[startIndex..<endIndex])
+        }
+
+        // No closing tag (common when the model truncates). Take until the next known opening tag or end.
+        let otherOpenTags = ["[spoken]", "[formal]", "[notes]"].filter { $0 != open }
+        var endIndex = text.endIndex
+        for marker in otherOpenTags {
+            if let markerRange = lower.range(of: marker, range: openEnd..<lower.endIndex) {
+                let candidate = text.index(text.startIndex, offsetBy: lower.distance(from: lower.startIndex, to: markerRange.lowerBound))
+                if candidate < endIndex { endIndex = candidate }
+            }
+        }
+        return String(text[startIndex..<endIndex])
+    }
+
+    private static func sanitizeSection(_ raw: String) -> String {
+        var text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Strip accidental tag echoes.
+        let tags = ["spoken", "formal", "notes"]
+        for t in tags {
+            text = text.replacingOccurrences(of: "[\(t)]", with: "", options: [.caseInsensitive])
+            text = text.replacingOccurrences(of: "[/\(t)]", with: "", options: [.caseInsensitive])
+        }
+        return text.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private static func decodeJSON(from text: String) -> LLMGenerated? {

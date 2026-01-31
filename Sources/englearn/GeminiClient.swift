@@ -36,8 +36,10 @@ struct GeminiClient {
         }
 
         let decoded = try JSONDecoder().decode(GeminiGenerateResponse.self, from: data)
-        let text = decoded.candidates?.first?.content?.parts?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let text, !text.isEmpty else { throw LLMError.emptyResponse }
+        let parts = decoded.candidates?.first?.content?.parts ?? []
+        let combined = parts.compactMap(\.text).joined()
+        let text = combined.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { throw LLMError.emptyResponse }
         return text
     }
 }

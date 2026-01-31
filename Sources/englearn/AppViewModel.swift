@@ -228,7 +228,43 @@ final class AppViewModel: ObservableObject {
                     system: prompt.system,
                     user: prompt.user
                 )
-                let parsed = OutputParser.parse(rawText: raw)
+                var parsed = OutputParser.parse(rawText: raw)
+
+                // If the model ignored the requested mode (common on shorter token budgets),
+                // do a one-time follow-up to fetch the missing section(s) when mode == both.
+                if config.generateMode == .both {
+                    if parsed.formal.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        let follow = PromptBuilder.buildMissingSection(for: input, config: config, missing: .formal)
+                        let raw2 = try await llm.generate(
+                            provider: config.provider,
+                            baseURL: config.baseURL,
+                            model: config.model,
+                            apiKey: apiKey,
+                            system: follow.system,
+                            user: follow.user
+                        )
+                        let parsed2 = OutputParser.parse(rawText: raw2)
+                        if !parsed2.formal.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            parsed = ParsedOutput(spoken: parsed.spoken, formal: parsed2.formal, notes: parsed.notes)
+                        }
+                    }
+                    if parsed.spoken.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        let follow = PromptBuilder.buildMissingSection(for: input, config: config, missing: .spoken)
+                        let raw2 = try await llm.generate(
+                            provider: config.provider,
+                            baseURL: config.baseURL,
+                            model: config.model,
+                            apiKey: apiKey,
+                            system: follow.system,
+                            user: follow.user
+                        )
+                        let parsed2 = OutputParser.parse(rawText: raw2)
+                        if !parsed2.spoken.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            parsed = ParsedOutput(spoken: parsed2.spoken, formal: parsed.formal, notes: parsed.notes)
+                        }
+                    }
+                }
+
                 spokenText = parsed.spoken
                 formalText = parsed.formal
                 notes = parsed.notes

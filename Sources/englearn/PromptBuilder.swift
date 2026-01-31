@@ -6,6 +6,11 @@ struct PromptBuilder {
         let user: String
     }
 
+    enum MissingSection {
+        case spoken
+        case formal
+    }
+
     static func build(for input: String, config: AppConfig) -> Prompt {
         let isChinese = LanguageDetect.containsChineseCharacters(input)
 
@@ -68,7 +73,9 @@ Rules:
 1) Preserve meaning. Do NOT add facts.
 2) Use domain-appropriate terminology for: \(domains.isEmpty ? "General" : domains).
 3) If a glossary entry exists, prefer the glossary phrasing consistently.
-4) Output MUST use this exact tag format (no markdown, no code fences):
+4) Output MUST use this exact tag format (no markdown, no code fences).
+5) Always include BOTH opening and closing tags. Do not omit closing tags.
+6) If a section is unavailable, leave it empty but still include its tags.
 
 \(outputFormat)
 
@@ -133,6 +140,15 @@ Input:
 """
             return Prompt(system: system, user: user)
         }
+    }
+
+    static func buildMissingSection(for input: String, config: AppConfig, missing: MissingSection) -> Prompt {
+        var config = config
+        config.generateMode = missing == .spoken ? .spokenOnly : .formalOnly
+        let base = build(for: input, config: config)
+        let which = missing == .spoken ? "spoken" : "formal"
+        let system = base.system + "\n\nAdditional rule: Only output the [\(which)] section (and optional [notes]) using the same tag format."
+        return Prompt(system: system, user: base.user)
     }
 }
 

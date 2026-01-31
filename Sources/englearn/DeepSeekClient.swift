@@ -20,7 +20,8 @@ struct DeepSeekClient {
                 .init(role: "system", content: systemText),
                 .init(role: "user", content: userText),
             ],
-            temperature: 0.6
+            temperature: 0.6,
+            max_tokens: 2048
         )
         request.httpBody = try JSONEncoder().encode(payload)
 
@@ -48,6 +49,7 @@ private struct DeepSeekChatRequest: Encodable {
     let model: String
     let messages: [Message]
     let temperature: Double
+    let max_tokens: Int
 }
 
 private struct DeepSeekChatResponse: Decodable {
