@@ -45,7 +45,7 @@ struct RootView: View {
                 ComposeView()
                     .tabItem { Label("Write", systemImage: "square.and.pencil") }
 
-                HistoryView()
+                HistoryView(layout: .menuBar)
                     .tabItem { Label("History", systemImage: "clock.arrow.circlepath") }
 
                 SettingsView()
@@ -70,7 +70,7 @@ struct RootView: View {
                     case .write:
                         ComposeView()
                     case .history:
-                        HistoryView()
+                        HistoryView(layout: .window)
                     case .settings:
                         SettingsView()
                     }

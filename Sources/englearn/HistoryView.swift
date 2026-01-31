@@ -1,14 +1,25 @@
 import SwiftUI
 
+enum HistoryLayout {
+    case window
+    case menuBar
+}
+
 struct HistoryView: View {
     @EnvironmentObject private var viewModel: AppViewModel
+    let layout: HistoryLayout
 
     @State private var query: String = ""
     @State private var entries: [HistoryEntry] = []
     @State private var selectedId: String?
+    @State private var presentedEntry: HistoryEntry?
 
     private var selectedEntry: HistoryEntry? {
         entries.first { $0.id == selectedId }
+    }
+
+    init(layout: HistoryLayout = .window) {
+        self.layout = layout
     }
 
     var body: some View {
@@ -28,52 +39,67 @@ struct HistoryView: View {
                 Divider()
                     .padding(.vertical, 10)
 
-                GeometryReader { proxy in
-                    let useHorizontalSplit = proxy.size.width >= 860
-                    Group {
-                        if useHorizontalSplit {
-                            HSplitView {
-                                historyList
-                                    .frame(minWidth: 240, idealWidth: 300)
-
-                                historyDetail
-                                    .frame(minWidth: 360)
-                            }
-                        } else {
-                            VSplitView {
-                                historyList
-                                    .frame(minHeight: 220, idealHeight: 260)
-
-                                historyDetail
-                                    .frame(minHeight: 240)
-                            }
-                        }
-                    }
-                    // Avoid SwiftUI trying to diff/morph HSplitView<->VSplitView during live resize/fullscreen.
-                    .id(useHorizontalSplit ? "history.hsplit" : "history.vsplit")
+                switch layout {
+                case .menuBar:
+                    historyMenuBarList
+                case .window:
+                    historyWindowSplit
                 }
-                .frame(minHeight: 520)
             }
         }
         .onAppear { reload() }
         .onChange(of: query) { _ in reload() }
+        .sheet(item: $presentedEntry) { entry in
+            HistoryDetailSheetView(entry: entry)
+        }
+    }
+
+    private var historyWindowSplit: some View {
+        GeometryReader { proxy in
+            let useHorizontalSplit = proxy.size.width >= 860
+            Group {
+                if useHorizontalSplit {
+                    HSplitView {
+                        historyList
+                            .frame(minWidth: 240, idealWidth: 300)
+
+                        historyDetail
+                            .frame(minWidth: 360)
+                    }
+                } else {
+                    VSplitView {
+                        historyList
+                            .frame(minHeight: 220, idealHeight: 260)
+
+                        historyDetail
+                            .frame(minHeight: 240)
+                    }
+                }
+            }
+            // Avoid SwiftUI trying to diff/morph HSplitView<->VSplitView during live resize/fullscreen.
+            .id(useHorizontalSplit ? "history.hsplit" : "history.vsplit")
+        }
+        .frame(minHeight: 520)
+    }
+
+    private var historyMenuBarList: some View {
+        List(entries) { entry in
+            Button {
+                presentedEntry = entry
+            } label: {
+                HistoryRow(entry: entry)
+            }
+            .buttonStyle(.plain)
+            .contextMenu {
+                Button("Delete") { delete(entry) }
+            }
+        }
     }
 
     private var historyList: some View {
         List(selection: $selectedId) {
             ForEach(entries) { entry in
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text(entry.createdAt, style: .date)
-                        Text(entry.createdAt, style: .time)
-                        Spacer()
-                        Text(entry.provider.displayName)
-                            .foregroundStyle(.secondary)
-                    }
-                    Text(snippet(entry.input))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                }
+                HistoryRow(entry: entry)
                 .tag(entry.id)
                 .contextMenu {
                     Button("Delete") { delete(entry) }
@@ -119,6 +145,31 @@ struct HistoryView: View {
                 if selectedId == entry.id { selectedId = nil }
                 reload()
             }
+        }
+    }
+
+    private func snippet(_ text: String) -> String {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.count <= 140 { return trimmed }
+        return trimmed.prefix(140) + "…"
+    }
+}
+
+private struct HistoryRow: View {
+    let entry: HistoryEntry
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(entry.createdAt, style: .date)
+                Text(entry.createdAt, style: .time)
+                Spacer()
+                Text(entry.provider.displayName)
+                    .foregroundStyle(.secondary)
+            }
+            Text(snippet(entry.input))
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
         }
     }
 
@@ -177,5 +228,69 @@ private struct HistoryDetailView: View {
             }
             .padding()
         }
+    }
+}
+
+private struct HistoryDetailSheetView: View {
+    @EnvironmentObject private var viewModel: AppViewModel
+    @Environment(\.dismiss) private var dismiss
+    let entry: HistoryEntry
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(entry.createdAt, style: .date)
+                        .foregroundStyle(.secondary)
+                        .font(.footnote)
+                    Text("\(entry.provider.displayName) • \(entry.model)")
+                        .foregroundStyle(.secondary)
+                        .font(.footnote)
+                }
+                Spacer()
+                Button("Close") { dismiss() }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+
+            Divider()
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 10) {
+                        Button("Load into editor") {
+                            viewModel.inputText = entry.input
+                            viewModel.spokenText = entry.spoken
+                            viewModel.formalText = entry.formal
+                        }
+                        Spacer()
+                        Button("Speak Spoken") { viewModel.speech.toggleSpeak(target: .spoken, text: entry.spoken) }
+                            .disabled(entry.spoken.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        Button("Speak Formal") { viewModel.speech.toggleSpeak(target: .formal, text: entry.formal) }
+                            .disabled(entry.formal.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+
+                    GroupBox("Input") {
+                        Text(entry.input)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .textSelection(.enabled)
+                    }
+
+                    GroupBox("Spoken Script") {
+                        Text(entry.spoken.isEmpty ? "—" : entry.spoken)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .textSelection(.enabled)
+                    }
+
+                    GroupBox("Formal Writing") {
+                        Text(entry.formal.isEmpty ? "—" : entry.formal)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .textSelection(.enabled)
+                    }
+                }
+                .padding()
+            }
+        }
+        .frame(minWidth: 560, minHeight: 560)
     }
 }

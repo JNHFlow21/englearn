@@ -6,57 +6,72 @@ enum Theme {
     static let sectionSpacing: CGFloat = 14
 
     enum Metrics {
-        static let maxContentWidth: CGFloat = 980
+        static let maxContentWidth: CGFloat = 1120
         static let pagePadding: CGFloat = 18
-        static let pageVerticalPadding: CGFloat = 16
+        static let pageVerticalPadding: CGFloat = 12
     }
 
     enum Fonts {
         static func pageTitle(_ scheme: ColorScheme) -> Font {
-            // Light mode: editorial headline (New York-ish via `.serif`).
-            // Dark mode: macOS-native SF.
-            if scheme == .light {
-                return .system(size: 34, weight: .semibold, design: .serif)
-            }
-            return .system(size: 28, weight: .semibold, design: .default)
+            // Editorial headline (New York-ish via `.serif`) for both schemes.
+            return .system(size: scheme == .light ? 34 : 30, weight: .semibold, design: .serif)
         }
 
         static func cardTitle(_ scheme: ColorScheme) -> Font {
-            if scheme == .light {
-                return .system(.headline, design: .serif)
-            }
-            return .headline
+            .system(.headline, design: .serif)
         }
     }
 
     enum Colors {
-        static func pageBackground(_ scheme: ColorScheme) -> Color {
+        static func pageBackgroundView(_ scheme: ColorScheme) -> AnyView {
             if scheme == .light {
                 // Subtle warm paper.
-                return Color(red: 0.965, green: 0.955, blue: 0.93)
+                return AnyView(Color(red: 0.965, green: 0.955, blue: 0.93))
             }
-            return Color(nsColor: .windowBackgroundColor)
+
+            // Dark editorial backdrop (deep black with a soft top glow).
+            return AnyView(
+                ZStack {
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.08, green: 0.08, blue: 0.09),
+                            Color(red: 0.03, green: 0.03, blue: 0.035)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    RadialGradient(
+                        colors: [
+                            Color.white.opacity(0.05),
+                            Color.clear
+                        ],
+                        center: .top,
+                        startRadius: 40,
+                        endRadius: 520
+                    )
+                }
+            )
         }
 
         static func cardBackground(_ scheme: ColorScheme) -> AnyShapeStyle {
             if scheme == .light {
                 return AnyShapeStyle(Color.white.opacity(0.92))
             }
-            return AnyShapeStyle(.regularMaterial)
+            return AnyShapeStyle(Color.white.opacity(0.06))
         }
 
         static func cardStroke(_ scheme: ColorScheme) -> Color {
             if scheme == .light {
                 return Color.black.opacity(0.08)
             }
-            return Color.primary.opacity(0.08)
+            return Color.white.opacity(0.10)
         }
 
         static func cardShadow(_ scheme: ColorScheme) -> (color: Color, radius: CGFloat, y: CGFloat) {
             if scheme == .light {
                 return (Color.black.opacity(0.08), 14, 7)
             }
-            return (Color.black.opacity(0.12), 18, 10)
+            return (Color.black.opacity(0.45), 20, 12)
         }
     }
 }
@@ -138,6 +153,8 @@ struct PageContainer<Content: View>: View {
         .padding(.horizontal, Theme.Metrics.pagePadding)
         .padding(.vertical, Theme.Metrics.pageVerticalPadding)
         .frame(maxWidth: .infinity, alignment: .center)
-        .background(Theme.Colors.pageBackground(colorScheme))
+        .background {
+            Theme.Colors.pageBackgroundView(colorScheme)
+        }
     }
 }

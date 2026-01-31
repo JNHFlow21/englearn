@@ -5,32 +5,35 @@ struct ComposeView: View {
     @State private var compareTarget: SpeechTarget?
 
     var body: some View {
-        ScrollView {
-            PageContainer(title: "Write") {
-                VStack(spacing: 12) {
-                    Card(title: "Draft", systemImage: "square.and.pencil") {
-                        VStack(spacing: Theme.sectionSpacing) {
-                            ZStack(alignment: .topLeading) {
-                                RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                                    .fill(.quaternary.opacity(0.25))
-                                    .overlay {
-                                        RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                                            .strokeBorder(.primary.opacity(0.08), lineWidth: 1)
+        GeometryReader { proxy in
+            let editorHeight = max(260, min(460, proxy.size.height * 0.34))
+
+            ScrollView {
+                PageContainer(title: "Write") {
+                    VStack(spacing: 12) {
+                        Card(title: "Draft", systemImage: "square.and.pencil") {
+                            VStack(spacing: Theme.sectionSpacing) {
+                                ZStack(alignment: .topLeading) {
+                                    RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                                        .fill(.quaternary.opacity(0.25))
+                                        .overlay {
+                                            RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                                                .strokeBorder(.primary.opacity(0.08), lineWidth: 1)
+                                        }
+
+                                    TextEditor(text: $viewModel.inputText)
+                                        .font(.system(.body, design: .monospaced))
+                                        .scrollContentBackground(.hidden)
+                                        .padding(6)
+
+                                    if viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                        Text("Write in English (fix & polish) or Chinese (translate)…")
+                                            .foregroundStyle(.secondary)
+                                            .padding(12)
+                                            .allowsHitTesting(false)
                                     }
-
-                                TextEditor(text: $viewModel.inputText)
-                                    .font(.system(.body, design: .monospaced))
-                                    .scrollContentBackground(.hidden)
-                                    .padding(6)
-
-                                if viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                    Text("Write in English (fix & polish) or Chinese (translate)…")
-                                        .foregroundStyle(.secondary)
-                                        .padding(12)
-                                        .allowsHitTesting(false)
                                 }
-                            }
-                            .frame(height: 200)
+                                .frame(height: editorHeight)
 
                             HStack(alignment: .center, spacing: 12) {
                                 Button("Paste") { viewModel.pasteFromClipboard() }
@@ -117,6 +120,7 @@ struct ComposeView: View {
                     }
                 }
             }
+        }
         }
         .sheet(item: Binding(
             get: { compareTarget.map(CompareTarget.init) },
