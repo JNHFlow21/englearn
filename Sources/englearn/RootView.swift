@@ -32,7 +32,11 @@ private enum AppSection: String, CaseIterable, Identifiable {
 struct RootView: View {
     @EnvironmentObject private var viewModel: AppViewModel
     let context: RootContext
-    @State private var section: AppSection = .write
+    @State private var selectedSectionId: String? = AppSection.write.id
+
+    private var selectedSection: AppSection {
+        AppSection(rawValue: selectedSectionId ?? "") ?? .write
+    }
 
     var body: some View {
         switch context {
@@ -52,17 +56,17 @@ struct RootView: View {
 
         case .window:
             NavigationSplitView {
-                List(selection: $section) {
+                List(selection: $selectedSectionId) {
                     ForEach(AppSection.allCases) { item in
                         Label(item.title, systemImage: item.systemImage)
-                            .tag(item)
+                            .tag(item.id)
                     }
                 }
                 .navigationTitle("Englearn")
                 .frame(minWidth: 220)
             } detail: {
                 Group {
-                    switch section {
+                    switch selectedSection {
                     case .write:
                         ComposeView()
                     case .history:
@@ -71,7 +75,7 @@ struct RootView: View {
                         SettingsView()
                     }
                 }
-                .navigationTitle(section.title)
+                .navigationTitle(selectedSection.title)
             }
             .navigationSplitViewStyle(.balanced)
         }
