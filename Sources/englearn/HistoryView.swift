@@ -27,43 +27,62 @@ struct HistoryView: View {
 
             Divider()
 
-            HSplitView {
-                List(selection: $selectedId) {
-                    ForEach(entries) { entry in
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Text(entry.createdAt, style: .date)
-                                Text(entry.createdAt, style: .time)
-                                Spacer()
-                                Text(entry.provider.displayName)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Text(snippet(entry.input))
-                                .foregroundStyle(.secondary)
-                                .lineLimit(2)
-                        }
-                        .tag(entry.id)
-                        .contextMenu {
-                            Button("Delete") { delete(entry) }
-                        }
-                    }
-                }
-                .frame(minWidth: 280, idealWidth: 320)
+            ViewThatFits(in: .horizontal) {
+                HSplitView {
+                    historyList
+                        .frame(minWidth: 240, idealWidth: 300)
 
-                if let selectedEntry {
-                    HistoryDetailView(entry: selectedEntry)
-                        .frame(minWidth: 520, idealWidth: 700)
-                } else {
-                    VStack {
-                        Text("Select an item")
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    historyDetail
+                        .frame(minWidth: 360)
+                }
+
+                VSplitView {
+                    historyList
+                        .frame(minHeight: 220, idealHeight: 260)
+
+                    historyDetail
+                        .frame(minHeight: 240)
                 }
             }
         }
         .onAppear { reload() }
         .onChange(of: query) { _ in reload() }
+    }
+
+    private var historyList: some View {
+        List(selection: $selectedId) {
+            ForEach(entries) { entry in
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(entry.createdAt, style: .date)
+                        Text(entry.createdAt, style: .time)
+                        Spacer()
+                        Text(entry.provider.displayName)
+                            .foregroundStyle(.secondary)
+                    }
+                    Text(snippet(entry.input))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+                .tag(entry.id)
+                .contextMenu {
+                    Button("Delete") { delete(entry) }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var historyDetail: some View {
+        if let selectedEntry {
+            HistoryDetailView(entry: selectedEntry)
+        } else {
+            VStack {
+                Text("Select an item")
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
     }
 
     private func reload() {

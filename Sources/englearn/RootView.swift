@@ -72,16 +72,6 @@ struct RootView: View {
                     }
                 }
                 .navigationTitle(section.title)
-                .toolbar {
-                    ToolbarItem(placement: .navigation) {
-                        Button {
-                            NSApp.keyWindow?.firstResponder?.tryToPerform(#selector(NSSplitViewController.toggleSidebar(_:)), with: nil)
-                        } label: {
-                            Image(systemName: "sidebar.left")
-                        }
-                        .help("Toggle Sidebar")
-                    }
-                }
             }
             .navigationSplitViewStyle(.balanced)
         }
