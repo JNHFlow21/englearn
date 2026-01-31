@@ -4,6 +4,7 @@ struct CompareView: View {
     let title: String
     let original: String
     let revised: String
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -11,6 +12,8 @@ struct CompareView: View {
                 Text(title)
                     .font(.headline)
                 Spacer()
+                Button("Close") { dismiss() }
+                    .keyboardShortcut(.cancelAction)
             }
 
             HSplitView {
@@ -37,4 +40,3 @@ struct CompareView: View {
         .frame(minWidth: 900, minHeight: 520)
     }
 }
-

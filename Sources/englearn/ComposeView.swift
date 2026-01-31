@@ -48,25 +48,33 @@ struct ComposeView: View {
                                 .foregroundStyle(.secondary)
                                 .font(.footnote)
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
-                        HStack {
-                            Button("Paste") { viewModel.pasteFromClipboard() }
-                            Button("Clear") { viewModel.clearAll() }
-                            Spacer()
-                            Picker("", selection: Binding(
-                                get: { viewModel.config.generateMode },
-                                set: { viewModel.setGenerateMode($0) }
-                            )) {
-                                ForEach(GenerateMode.allCases) { mode in
-                                    Text(mode.displayName).tag(mode)
-                                }
+                        HStack(alignment: .center, spacing: 12) {
+                            HStack(spacing: 10) {
+                                Button("Paste") { viewModel.pasteFromClipboard() }
+                                Button("Clear") { viewModel.clearAll() }
                             }
-                            .pickerStyle(.menu)
+                            .frame(maxWidth: .infinity, alignment: .leading)
 
-                            Menu {
-                                Button("Generate Spoken") { viewModel.generate(mode: .spokenOnly) }
-                                Button("Generate Formal") { viewModel.generate(mode: .formalOnly) }
-                                Button("Generate Both") { viewModel.generate(mode: .both) }
+                            HStack(spacing: 12) {
+                                Text("Output")
+                                    .foregroundStyle(.secondary)
+                                Picker("", selection: Binding(
+                                    get: { viewModel.config.generateMode },
+                                    set: { viewModel.setGenerateMode($0) }
+                                )) {
+                                    ForEach(GenerateMode.allCases) { mode in
+                                        Text(mode.displayName).tag(mode)
+                                    }
+                                }
+                                .pickerStyle(.segmented)
+                                .frame(width: 240)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .center)
+
+                            Button {
+                                viewModel.generate()
                             } label: {
                                 if viewModel.isGenerating {
                                     ProgressView()
@@ -75,8 +83,10 @@ struct ComposeView: View {
                                     Text("Generate")
                                 }
                             }
+                            .buttonStyle(.borderedProminent)
                             .keyboardShortcut(.defaultAction)
                             .disabled(viewModel.isGenerating)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
                         }
 
                         if let errorMessage = viewModel.errorMessage {
