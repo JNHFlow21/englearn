@@ -7,7 +7,7 @@ cd "$ROOT_DIR"
 APP_NAME="Thought2English"
 BIN_NAME="englearn"
 BUNDLE_ID="com.englearn.app"
-VERSION="0.1.0"
+VERSION="${APP_VERSION:-0.1.0}"
 
 echo "Building (release)…"
 swift build -c release

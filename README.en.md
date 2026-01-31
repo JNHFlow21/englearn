@@ -11,22 +11,15 @@ Supports **Gemini** and **DeepSeek** using your own API keys (stored locally in 
 
 ## Screenshots
 
-(TBD)
+Put screenshots under `assets/screenshots/` (e.g. `assets/screenshots/write.png`) and reference them here:
 
-## Run (dev)
-
-```bash
-swift run
+```md
+![Write](assets/screenshots/write.png)
+![History](assets/screenshots/history.png)
+![Settings](assets/screenshots/settings.png)
 ```
 
-## Build a `.app` bundle (no Xcode)
-
-```bash
-./scripts/package_app.sh
-open dist/Thought2English.app
-```
-
-## Install via Homebrew (recommended)
+## Install (recommended)
 
 ```bash
 brew tap jnhflow21/thought2english
@@ -38,6 +31,13 @@ Upgrade:
 ```bash
 brew upgrade --cask thought2english
 ```
+
+## Usage
+
+1) Open Thought2English  
+2) Paste Chinese or English in Write  
+3) Choose output (Spoken / Formal / Both)  
+4) Click Generate, then copy or speak  
 
 ## Configuration
 
@@ -52,20 +52,3 @@ Recommended defaults:
 
 - DeepSeek: Base URL `https://api.deepseek.com`, model `deepseek-chat`
 - Gemini: Base URL `https://generativelanguage.googleapis.com`, model `gemini-3-flash-preview`
-
-## Icon (optional)
-
-Provide a 1024×1024 PNG (centered with generous padding, strong contrast for both light/dark backgrounds).
-
-```bash
-# 1) Put your PNG at Assets/AppIcon-1024.png
-# 2) Generate Assets/AppIcon.icns
-./scripts/build_icon.sh
-
-# 3) Re-package
-./scripts/package_app.sh
-```
-
-## Privacy
-
-See `PRIVACY.md`.

@@ -1,0 +1,89 @@
+name: Release + Homebrew Cask
+
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+    env:
+      APP_NAME: Thought2English
+      BIN_NAME: englearn
+      TAP_REPO: JNHFlow21/homebrew-thought2english
+      # Base version stays in scripts/package_app.sh / Info.plist.
+      BASE_VERSION: "0.1.0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute version
+        run: |
+          echo "APP_VERSION=${BASE_VERSION}.${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+          echo "TAG=v${BASE_VERSION}.${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+
+      - name: Build app bundle
+        run: |
+          ./scripts/package_app.sh
+        env:
+          APP_VERSION: ${{ env.APP_VERSION }}
+
+      - name: Zip app
+        run: |
+          ZIP="dist/${APP_NAME}-${APP_VERSION}-macos.zip"
+          rm -f "$ZIP"
+          ditto -c -k --sequesterRsrc --keepParent "dist/${APP_NAME}.app" "$ZIP"
+          echo "ZIP_PATH=$ZIP" >> "$GITHUB_ENV"
+
+      - name: Compute sha256
+        run: |
+          SHA=$(shasum -a 256 "${ZIP_PATH}" | awk '{print $1}')
+          echo "ZIP_SHA256=$SHA" >> "$GITHUB_ENV"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: "${{ env.APP_NAME }} ${{ env.APP_VERSION }}"
+          files: ${{ env.ZIP_PATH }}
+          generate_release_notes: true
+
+      - name: Update Homebrew cask repo
+        if: ${{ secrets.HOMEBREW_TAP_TOKEN != '' }}
+        run: |
+          set -euo pipefail
+          TAP_DIR="$(mktemp -d)"
+          git clone "https://${HOMEBREW_TAP_TOKEN}@github.com/${TAP_REPO}.git" "$TAP_DIR"
+          cd "$TAP_DIR"
+
+          mkdir -p Casks
+          cat > Casks/thought2english.rb <<RUBY
+          cask "thought2english" do
+            version "${APP_VERSION}"
+            sha256 "${ZIP_SHA256}"
+
+            url "https://github.com/JNHFlow21/englearn/releases/download/${TAG}/${APP_NAME}-${APP_VERSION}-macos.zip",
+                verified: "github.com/JNHFlow21/englearn/"
+            name "${APP_NAME}"
+            desc "Turn Chinese/English notes into native English (spoken + formal)"
+            homepage "https://github.com/JNHFlow21/englearn"
+
+            app "${APP_NAME}.app"
+
+            zap trash: [
+              "~/Library/Application Support/Thought2English",
+              "~/Library/Preferences/com.englearn.app.plist",
+            ]
+          end
+          RUBY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/thought2english.rb
+          git commit -m "Update thought2english to ${APP_VERSION}" || exit 0
+          git push
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+

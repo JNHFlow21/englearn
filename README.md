@@ -11,22 +11,15 @@
 
 ## 截图
 
-（待补）
+把截图放到 `assets/screenshots/`（例如：`assets/screenshots/write.png`），然后在这里用相对路径引用即可：
 
-## 快速开始（开发模式）
-
-```bash
-swift run
+```md
+![Write](assets/screenshots/write.png)
+![History](assets/screenshots/history.png)
+![Settings](assets/screenshots/settings.png)
 ```
 
-## 打包成 `.app`（不需要 Xcode）
-
-```bash
-./scripts/package_app.sh
-open dist/Thought2English.app
-```
-
-## Homebrew 安装（推荐）
+## 安装（推荐）
 
 ```bash
 brew tap jnhflow21/thought2english
@@ -38,6 +31,13 @@ brew install --cask thought2english
 ```bash
 brew upgrade --cask thought2english
 ```
+
+## 使用
+
+1) 打开 Thought2English  
+2) 在 Write 页粘贴中文或英文  
+3) 选择输出（Spoken / Formal / Both）  
+4) 点 Generate，复制或朗读结果  
 
 ## 配置
 
@@ -52,20 +52,3 @@ brew upgrade --cask thought2english
 
 - DeepSeek：Base URL `https://api.deepseek.com`，model `deepseek-chat`
 - Gemini：Base URL `https://generativelanguage.googleapis.com`，model `gemini-3-flash-preview`
-
-## Icon（可选）
-
-你可以提供一张 1024×1024 的 PNG（建议：居中、留白足够、对比强，适合深色/浅色背景）。
-
-```bash
-# 1) 放到 Assets/AppIcon-1024.png
-# 2) 生成 Assets/AppIcon.icns
-./scripts/build_icon.sh
-
-# 3) 重新打包
-./scripts/package_app.sh
-```
-
-## 隐私
-
-见 `PRIVACY.md`。
