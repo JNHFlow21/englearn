@@ -7,15 +7,27 @@ A small macOS helper that turns your daily notes (Chinese or English) into two E
 - **Spoken Script**: more conversational, closer to “how you’d actually say it” (Crypto Twitter / industry-native tone)
 - **Formal Writing**: more professional and workplace-friendly
 
-Supports **Gemini** and **DeepSeek** using your own API keys (stored locally in `UserDefaults` in plain text).
+Supports **Gemini** and **DeepSeek** using your own API keys.
 
 ## Screenshots
 
-![Write (English)](assets/screenshots/writeeng.png)
+### Main Window
 
-![History](assets/screenshots/history.png)
+![Write (English)](Assets/screenshots/writeeng.png)
 
-![Settings](assets/screenshots/settings.png)
+![Write (Chinese)](Assets/screenshots/writecn.png)
+
+![History](Assets/screenshots/history.png)
+
+![Settings](Assets/screenshots/settings.png)
+
+### Menu Bar
+
+![Menu Bar - Write](Assets/screenshots/menubar-write.png)
+
+![Menu Bar - History](Assets/screenshots/menubar-history.png)
+
+![Menu Bar - Settings](Assets/screenshots/menubar-settings.png)
 
 ## Install (recommended)
 

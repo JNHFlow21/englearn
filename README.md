@@ -7,15 +7,27 @@
 - **Spoken Script**：更口语、更像你在真实表达（偏 Crypto Twitter / 圈内表达）
 - **Formal Writing**：更正式、更适合工作场景
 
-支持 **Gemini** / **DeepSeek**，使用你自己的 API Key（保存在本机 `UserDefaults`，明文）。
+支持 **Gemini** / **DeepSeek**，使用你自己的 API Key。
 
 ## 截图
 
-![Write (English)](assets/screenshots/writeeng.png)
+### 主窗口
 
-![History](assets/screenshots/history.png)
+![Write (English)](Assets/screenshots/writeeng.png)
 
-![Settings](assets/screenshots/settings.png)
+![Write (Chinese)](Assets/screenshots/writecn.png)
+
+![History](Assets/screenshots/history.png)
+
+![Settings](Assets/screenshots/settings.png)
+
+### 菜单栏小窗（Menu Bar）
+
+![Menu Bar - Write](Assets/screenshots/menubar-write.png)
+
+![Menu Bar - History](Assets/screenshots/menubar-history.png)
+
+![Menu Bar - Settings](Assets/screenshots/menubar-settings.png)
 
 ## 安装（推荐）
 
