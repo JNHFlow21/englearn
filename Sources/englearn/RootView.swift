@@ -31,6 +31,7 @@ private enum AppSection: String, CaseIterable, Identifiable {
 
 struct RootView: View {
     @EnvironmentObject private var viewModel: AppViewModel
+    @Environment(\.colorScheme) private var colorScheme
     let context: RootContext
     @State private var selectedSectionId: String? = AppSection.write.id
 
@@ -41,43 +42,53 @@ struct RootView: View {
     var body: some View {
         switch context {
         case .menuBar:
-            TabView {
-                ComposeView()
-                    .tabItem { Label("Write", systemImage: "square.and.pencil") }
+            ZStack {
+                Theme.Colors.pageBackgroundView(colorScheme)
+                    .ignoresSafeArea()
 
-                HistoryView(layout: .menuBar)
-                    .tabItem { Label("History", systemImage: "clock.arrow.circlepath") }
+                TabView {
+                    ComposeView()
+                        .tabItem { Label("Write", systemImage: "square.and.pencil") }
 
-                SettingsView()
-                    .tabItem { Label("Settings", systemImage: "gearshape") }
+                    HistoryView(layout: .menuBar)
+                        .tabItem { Label("History", systemImage: "clock.arrow.circlepath") }
+
+                    SettingsView()
+                        .tabItem { Label("Settings", systemImage: "gearshape") }
+                }
+                .frame(minWidth: 560, idealWidth: 600, minHeight: 640, idealHeight: 760)
+                .padding(.top, 4)
             }
-            .frame(minWidth: 560, idealWidth: 600, minHeight: 640, idealHeight: 760)
-            .padding(.top, 4)
 
         case .window:
-            NavigationSplitView {
-                List(selection: $selectedSectionId) {
-                    ForEach(AppSection.allCases) { item in
-                        Label(item.title, systemImage: item.systemImage)
-                            .tag(item.id)
+            ZStack {
+                Theme.Colors.pageBackgroundView(colorScheme)
+                    .ignoresSafeArea()
+
+                NavigationSplitView {
+                    List(selection: $selectedSectionId) {
+                        ForEach(AppSection.allCases) { item in
+                            Label(item.title, systemImage: item.systemImage)
+                                .tag(item.id)
+                        }
                     }
-                }
-                .navigationTitle("Englearn")
-                .frame(minWidth: 220)
-            } detail: {
-                Group {
-                    switch selectedSection {
-                    case .write:
-                        ComposeView()
-                    case .history:
-                        HistoryView(layout: .window)
-                    case .settings:
-                        SettingsView()
+                    .navigationTitle("Englearn")
+                    .frame(minWidth: 220)
+                } detail: {
+                    Group {
+                        switch selectedSection {
+                        case .write:
+                            ComposeView()
+                        case .history:
+                            HistoryView(layout: .window)
+                        case .settings:
+                            SettingsView()
+                        }
                     }
+                    .navigationTitle(selectedSection.title)
                 }
-                .navigationTitle(selectedSection.title)
+                .navigationSplitViewStyle(.balanced)
             }
-            .navigationSplitViewStyle(.balanced)
         }
     }
 }
